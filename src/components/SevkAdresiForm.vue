@@ -25,7 +25,7 @@
           <label for="il" class="form-label">İl/İlçe</label>
           <multiselect
             v-model="il"
-            :options="iller"
+            :options="illerOptions"
             placeholder="İl/İlçe seçiniz"
           ></multiselect>
         </div>
@@ -188,8 +188,8 @@
         </div>
       </div>
     </form>
-
     <div class="mt-5">
+      <hr />
       <h5>Müşteri</h5>
       <a href="#" @click="showModal = true" class="text-danger mb-3 d-block"
         >Ekle</a
@@ -274,18 +274,15 @@ export default {
   components: {
     Multiselect,
   },
+
   data() {
     return {
       ad: null,
       availableNames: [], // Autocomplete için örnek veri
       ulkeler: [],
       ulke: null,
-      iller: [
-        "Ankara/Kazan-TR0620",
-        "İstanbul/Ataşehir-TR0340",
-        "İzmir/Foça-TR0432",
-      ],
-      il: "Ankara/Kazan-TR0620",
+      illerOptions: [],
+      il: null,
 
       adres:
         "Ankara Lojistik Üssü B Blok No:3-4,Bitik,06980 Kahramankazan/Ankara,Türkiye",
@@ -307,14 +304,21 @@ export default {
       showModal: false, // Modal gösterimini kontrol eder
       selectedFirma: null, // Modal'da seçilen firma
       selectedKod: "", // Modal'da girilen kod
-      firmalar: [], // Tabloda gösterilecek firmalar
+      firmalar: [
+        {
+          firma: "Cargili Tarım Ve Gıda Sanayi Tic.Anonim Şirketi",
+          kod: "TR1234",
+        },
+      ], // Tabloda gösterilecek firmalar
     };
   },
 
   created() {
     this.fetchAvailableNames();
     this.fetchCountries();
+    this.fetchCities();
   },
+
   methods: {
     async fetchAvailableNames() {
       try {
@@ -336,13 +340,23 @@ export default {
         console.error("Error fetching countries:", error);
       }
     },
+    async fetchCities() {
+      try {
+        const response = await axios.get("http://localhost:3000/iller");
+        this.illerOptions = response.data.map((il) => il.name);
+        // Sadece il/ilçe isimlerini içeren bir nesne oluştur
+      } catch (error) {
+        console.error("API'den veri çekme hatası:", error);
+      }
+    },
+
     addFirma() {
       if (this.selectedFirma && this.selectedKod) {
         this.firmalar.push({
           firma: this.selectedFirma,
           kod: this.selectedKod,
         });
-        this.selectedFirma = null;
+        this.selectedFirma = "null";
         this.selectedKod = "";
         this.showModal = false;
       }
